@@ -1,0 +1,9 @@
+services:
+	mqtt-broker:
+		image: eclipse-mosquitto:2
+		container_name: aiot-mqtt-broker
+		restart: unless-stopped
+		ports:
+			- "1883:1883"
+		volumes:
+			- ./mqtt-broker/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro

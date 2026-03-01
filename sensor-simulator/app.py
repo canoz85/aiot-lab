@@ -1,15 +1,18 @@
 import time
-import uuid
+import os
 
-from simulator import SmartSensor
-from feature_engine import FeatureEngine
 from mqtt_client import MQTTClient
-
-# DEVICE_ID = str(uuid.uuid4())[:8]
+from feature_engine import FeatureEngine
+from simulator import SmartSensor
 
 engine = FeatureEngine(window_size=10)
-mqtt = MQTTClient("mqtt-dashboard.com", 8884, "aiot/sensors/telemetry/xx", use_tls=True,
-    use_websocket=True,)
+mqtt = MQTTClient(
+    host=os.getenv("SIM_MQTT_HOST", "localhost"),
+    port=int(os.getenv("SIM_MQTT_PORT", "1883")),
+    topic=None,
+    use_tls=False,
+    use_websocket=False,
+)
 mqtt.connect()
 
  # Create an instance (The Object)
