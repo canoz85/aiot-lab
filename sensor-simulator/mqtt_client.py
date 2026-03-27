@@ -1,6 +1,7 @@
 import json
 import ssl
 import time
+import os
 import paho.mqtt.client as mqtt
 
 
@@ -22,6 +23,7 @@ class MQTTClient:
         self.port = port
         self.topic = topic
         self.keepalive = keepalive
+        self.debug = os.getenv("SIM_MQTT_DEBUG", "0").lower() in {"1", "true", "yes", "on"}
 
         transport = "websockets" if use_websocket else "tcp"
         self.client = mqtt.Client(client_id=client_id, transport=transport)
@@ -66,6 +68,8 @@ class MQTTClient:
             time.sleep(0.1)
 
         if not self._connected:
+            self.client.loop_stop()
+            self.client.disconnect()
             raise ConnectionError("MQTT connection failed")
 
     def disconnect(self):
@@ -77,7 +81,8 @@ class MQTTClient:
     # --------------------------------------------------
 
     def publish(self, payload, topic=None, qos=0, retain=False):
-        print(f"DEBUG: Passed topic arg: '{topic}' | Default topic: '{self.topic}'") # Bunu ekle
+        if self.debug:
+            print(f"DEBUG: Passed topic arg: '{topic}' | Default topic: '{self.topic}'")
         topic = topic or self.topic
         if topic is None:
             raise ValueError("No topic specified")
