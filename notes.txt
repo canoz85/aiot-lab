@@ -1,0 +1,163 @@
+esign a minimal GitHub-style project structure for your AIoT stack and create a 4-week “comfort builder” curriculum tailored to you
+
+Perfect.
+We’ll design this like an engineer would: clean boundaries, runnable locally, no magic.
+
+You want comfort.
+Comfort = clarity + repetition + small wins.
+
+🧱 Minimal AIoT Stack (GitHub-Style Structure)
+
+This is a single repository, modular, Docker-friendly, fully local.
+
+📁 Repository Structure
+aiot-lab/
+│
+├── README.md
+├── docker-compose.yml
+│
+├── mqtt-broker/
+│   └── mosquitto.conf
+│
+├── sensor-simulator/
+│   ├── app.py
+│   └── requirements.txt
+│
+├── ml-service/
+│   ├── train.py
+│   ├── model.pkl
+│   ├── inference.py
+│   ├── decision_engine.py
+│   └── requirements.txt
+│
+├── backend-node/
+│   ├── server.js
+│   ├── package.json
+│   └── metrics.js
+│
+├── dashboard/
+│   └── thingsboard-notes.md
+│
+└── experiments/
+    ├── threshold_tuning.ipynb
+    └── drift_detection.ipynb
+🔄 Data Flow Architecture
+sensor-simulator
+        ↓
+     MQTT broker
+        ↓
+     ml-service
+        ↓
+     decision_engine
+        ↓
+     backend-node
+        ↓
+     dashboard (ThingsBoard)
+
+Everything local. Everything understandable.
+
+🧩 Component Responsibilities
+1️⃣ sensor-simulator
+
+Publishes JSON every second
+
+Simulates temp, humidity, motion, etc.
+
+No ML here
+
+
+Clean Structure Recommendation
+
+Refactor sensor-simulator like this:
+
+sensor-simulator/
+│
+├── app.py              # entrypoint
+├── mqtt_client.py      # transport layer
+├── simulator.py        # raw sensor generation
+├── feature_engine.py   # derived features
+└── config.py
+🏗 Layered Architecture
+simulator.py       → raw physics
+feature_engine.py  → feature engineering
+mqtt_client.py     → transport
+app.py             → orchestration
+🔹 Example Refactor
+simulator.py (pure logic, testable)
+import random
+from datetime import datetime
+
+def generate_raw():
+    return {
+        "timestamp": datetime.utcnow().isoformat(),
+        "temperature": round(random.normalvariate(25, 2), 2),
+        "humidity": round(random.normalvariate(55, 5), 2),
+        "motion": random.random() < 0.1,
+        "light": round(random.uniform(50, 900), 2)
+    }
+feature_engine.py
+def add_features(data):
+    # Example derived features
+    data["heat_index"] = round(
+        data["temperature"] + 0.1 * data["humidity"], 2
+    )
+
+    data["is_dark"] = data["light"] < 200
+
+    return data
+
+Now you can:
+
+Add ML-target features
+
+Inject drift
+
+Simulate faulty sensors
+
+Toggle regimes
+
+Without touching MQTT.
+
+mqtt_client.py
+import json
+import paho.mqtt.client as mqtt
+
+class MQTTClient:
+    def __init__(self, host, port, topic):
+        self.client = mqtt.Client()
+        self.host = host
+        self.port = port
+        self.topic = topic
+
+    def connect(self):
+        self.client.connect(self.host, self.port, 60)
+        self.client.loop_start()
+
+    def publish(self, payload):
+        self.client.publish(self.topic, json.dumps(payload))
+
+    def close(self):
+        self.client.loop_stop()
+        self.client.disconnect()
+app.py
+import time
+import uuid
+
+from simulator import generate_raw
+from feature_engine import add_features
+from mqtt_client import MQTTClient
+
+DEVICE_ID = str(uuid.uuid4())[:8]
+
+mqtt_client = MQTTClient("mqtt-broker", 1883, "aiot/sensors/telemetry")
+mqtt_client.connect()
+
+while True:
+    raw = generate_raw()
+    enriched = add_features(raw)
+    enriched["device_id"] = DEVICE_ID
+
+    mqtt_client.publish(enriched)
+    print(enriched)
+
+    time.sleep(1)

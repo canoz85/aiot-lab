@@ -1,0 +1,15 @@
+{
+	"name": "aiot-backend-node",
+	"version": "0.1.0",
+	"private": true,
+	"description": "Backend consumer for AIoT decisions topic",
+	"main": "server.js",
+	"scripts": {
+		"start": "node server.js"
+	},
+	"dependencies": {
+		"express": "^4.21.2",
+		"mqtt": "^5.13.2"
+	}
+}
+
