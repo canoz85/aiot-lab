@@ -5,7 +5,9 @@ import numpy as np
 
 class FeatureEngine:
     # Smoothing factor for exponential moving average (0 < alpha <= 1).
-    # Higher alpha → reacts faster to changes; lower → smoother trend line.
+    # 0.3 is a common default: it weights the last ~3–4 readings most heavily
+    # while still keeping a memory of earlier values.  Increase toward 1.0 for
+    # faster reaction to spikes; decrease toward 0.0 for a smoother trend line.
     EMA_ALPHA = 0.3
 
     def __init__(self, window_size=10):
@@ -32,7 +34,8 @@ class FeatureEngine:
             # Rolling mean — centre of the recent distribution
             telemetry["temp_rolling_mean"] = round(avg_temp, 2)
 
-            # Rolling std — how volatile the temperature has been
+            # Rolling std — how volatile the temperature has been.
+            # 3 dp used for computed statistics to preserve meaningful precision.
             telemetry["temp_rolling_std"] = round(std_temp, 3)
 
             # Z-score — how many std deviations the current reading sits from
@@ -50,12 +53,14 @@ class FeatureEngine:
 
             # Lag-1 — the raw previous temperature value.
             # Gives the model a direct "what was it just before?" input.
-            telemetry["temp_lag_1"] = round(prev_temp, 2)
+            telemetry["temp_lag_1"] = round(prev_temp, 3)
 
             # EMA — exponentially weighted moving average.
             # Smooths noise while staying responsive to genuine trends.
-            # Seed from the previous reading's EMA; fall back to prev_temp
-            # when the feature is missing (e.g. first reading after cold start).
+            # Cold-start seed: on the very first history entry temp_ema is not
+            # yet present, so we fall back to prev_temp — equivalent to
+            # initialising the EMA at the first observed value, which is the
+            # standard convention.
             prev_ema = prev.get("temp_ema", prev_temp)
             telemetry["temp_ema"] = round(
                 self.EMA_ALPHA * current_temp + (1 - self.EMA_ALPHA) * prev_ema, 3
