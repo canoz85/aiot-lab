@@ -23,13 +23,21 @@ class TrainingResult:
 
 class Trainer:
 	FEATURES = [
+		# Raw sensor readings
 		"temperature",
 		"humidity",
 		"motion",
 		"light_lux",
+		# Derived scalar
 		"heat_index",
+		# Rolling-window statistics
 		"temp_rolling_mean",
+		"temp_rolling_std",
 		"temp_z_score",
+		# Temporal / sequential features
+		"temp_delta",   # rate of change vs. previous reading
+		"temp_lag_1",   # previous raw temperature
+		"temp_ema",     # exponentially-weighted moving average
 	]
 
 	def __init__(self, settings: Settings):
