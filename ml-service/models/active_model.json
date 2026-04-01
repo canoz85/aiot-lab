@@ -1,0 +1,33 @@
+{
+  "model_name": "rf_anomaly",
+  "version": "20260401205355",
+  "artifact_path": "ml-service\\models\\rf_anomaly_20260401205355.joblib",
+  "metrics": {
+    "f1": 0.9811320754716981,
+    "precision": 1.0,
+    "recall": 0.9629629629629629,
+    "pr_auc": 0.9986772486772486,
+    "anomaly_rate": 0.07371794871794872,
+    "time_split_used": 1.0,
+    "train_rows": 1498.0,
+    "test_rows": 374.0,
+    "tn": 347.0,
+    "fp": 0.0,
+    "fn": 1.0,
+    "tp": 26.0,
+    "thr_0_4_precision": 0.9629629629629629,
+    "thr_0_4_recall": 0.9629629629629629,
+    "thr_0_4_f1": 0.9629629629629629,
+    "thr_0_5_precision": 1.0,
+    "thr_0_5_recall": 0.9629629629629629,
+    "thr_0_5_f1": 0.9811320754716981,
+    "thr_0_6_precision": 1.0,
+    "thr_0_6_recall": 0.8888888888888888,
+    "thr_0_6_f1": 0.9411764705882353,
+    "thr_0_7_precision": 1.0,
+    "thr_0_7_recall": 0.8888888888888888,
+    "thr_0_7_f1": 0.9411764705882353,
+    "recommended_threshold": 0.5
+  },
+  "updated_at": "2026-04-01T20:53:55.269311+00:00"
+}

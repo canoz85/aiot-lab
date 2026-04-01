@@ -33,6 +33,11 @@ class ModelRegistry:
         self.metadata_file.write_text(json.dumps(metadata, indent=2), encoding="utf-8")
         return version, str(artifact_path)
 
+    def _load_metadata(self) -> dict[str, Any]:
+        if not self.metadata_file.exists():
+            return {}
+        return json.loads(self.metadata_file.read_text(encoding="utf-8"))
+
     def load_active(self) -> tuple[Any | None, str]:
         if not self.active_model_file.exists():
             return None, "none"
@@ -40,6 +45,15 @@ class ModelRegistry:
         model = joblib.load(self.active_model_file)
         version = "unknown"
         if self.metadata_file.exists():
-            metadata = json.loads(self.metadata_file.read_text(encoding="utf-8"))
+            metadata = self._load_metadata()
             version = metadata.get("version", "unknown")
         return model, version
+
+    def load_active_anomaly_threshold(self, default: float = 0.5) -> float:
+        metadata = self._load_metadata()
+        metrics = metadata.get("metrics", {})
+        threshold = metrics.get("recommended_threshold", default)
+        try:
+            return float(threshold)
+        except (TypeError, ValueError):
+            return float(default)

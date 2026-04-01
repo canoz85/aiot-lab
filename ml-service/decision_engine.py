@@ -61,7 +61,7 @@ class DecisionEngine:
 			severity = "warning"
 			reason_codes.extend(rule_result.triggered_rules)
 
-		if model_result.label == "anomaly" and model_result.score >= 0.7:
+		if model_result.label == "anomaly" and model_result.score >= self.model_runner.anomaly_threshold:
 			if decision == "allow":
 				decision = "review"
 				severity = "warning"

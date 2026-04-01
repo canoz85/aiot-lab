@@ -9,6 +9,8 @@ from model_registry import ModelRegistry
 
 
 class ModelRunner:
+	DEFAULT_ANOMALY_THRESHOLD = 0.5
+
 	FEATURE_ORDER = [
 		# Raw sensor readings
 		"temperature",
@@ -30,9 +32,11 @@ class ModelRunner:
 	def __init__(self, registry: ModelRegistry):
 		self.registry = registry
 		self.model, self.model_version = self.registry.load_active()
+		self.anomaly_threshold = self.registry.load_active_anomaly_threshold(self.DEFAULT_ANOMALY_THRESHOLD)
 
 	def reload_active_model(self) -> None:
 		self.model, self.model_version = self.registry.load_active()
+		self.anomaly_threshold = self.registry.load_active_anomaly_threshold(self.DEFAULT_ANOMALY_THRESHOLD)
 
 	def _vectorize(self, data: dict[str, Any]) -> np.ndarray:
 		values: list[float] = []
@@ -47,7 +51,7 @@ class ModelRunner:
 	def predict(self, data: dict[str, Any]) -> ModelResult:
 		if self.model is None:
 			score = min(abs(float(data.get("temp_z_score", 0.0))) / 5.0, 1.0)
-			label = "anomaly" if score >= 0.7 else "normal"
+			label = "anomaly" if score >= self.anomaly_threshold else "normal"
 			return ModelResult(
 				model_version="none",
 				score=score,
@@ -66,7 +70,7 @@ class ModelRunner:
 			prediction = int(self.model.predict(vector)[0])
 			score = float(prediction)
 
-		label = "anomaly" if score >= 0.5 else "normal"
+		label = "anomaly" if score >= self.anomaly_threshold else "normal"
 		confidence = score if label == "anomaly" else (1.0 - score)
 		return ModelResult(
 			model_version=self.model_version,

@@ -26,6 +26,11 @@ class MlDecisionService:
         self.state_store.save_decision(decision)
 
     def run(self) -> None:
+        print(
+            "ml-service starting "
+            f"model_version={self.model_runner.model_version} "
+            f"anomaly_threshold={self.model_runner.anomaly_threshold:.2f}"
+        )
         self.publisher.connect()
         self.publisher.client.loop_start()
         try:
